@@ -1,0 +1,41 @@
+//@version=6
+indicator("1723.HK Performance and BTC metrics", overlay=false)
+
+// Define the index date (January 10, 2025)
+indexDate = timestamp(2025, 1, 10, 0, 0)
+
+// Get 1723.HK close price (current chart symbol)
+stockClose = close
+
+// Fetch BTCUSD close price (using Binance BTCUSD; adjust if needed)
+btcClose = request.security("BINANCE:BTCUSD", timeframe.period, close, lookahead=barmerge.lookahead_off)
+
+// Calculate the reference prices at the index date
+var float stockRefPrice = 0.0
+var float btcRefPrice = 0.0
+var float ratioRef = 0.0
+if ta.crossover(time, indexDate)
+    stockRefPrice := stockClose
+    btcRefPrice := btcClose
+    ratioRef := stockClose / btcClose
+
+// Calculate percentage change and ratio, but only after the index date
+stockPctChange = stockRefPrice > 0 and time >= indexDate ? (stockClose - stockRefPrice) / stockRefPrice * 1 + 1 : na
+btcPctChange = btcRefPrice > 0 and time >= indexDate ? (btcClose - btcRefPrice) / btcRefPrice * 1 + 1 : na
+currentRatio = btcClose > 0 and time >= indexDate ? stockClose / btcClose : na
+ratioIndexed = ratioRef > 0 and time >= indexDate ? (currentRatio / ratioRef) * 1 : na
+
+// Plot the percentage changes and the indexed ratio
+plot(stockPctChange, "1723.HK % Change", color.blue, 2)
+plot(btcPctChange, "BTCUSD % Change", color.orange, 2)
+plot(ratioIndexed, "1723.HK/BTCUSD Ratio", color.green, 2)
+
+// Add zero line for reference
+hline(0, "Zero Line", color.black, hline.style_dashed)
+
+// Add reference line for indexed ratio
+hline(1, "Ratio Index Line (100)", color.gray, hline.style_dashed)
+
+// Add label for index date
+if ta.crossover(time, indexDate)
+    label.new(bar_index, 0, "Index Date: 14-Jan-2025", style=label.style_label_down, color=color.green)

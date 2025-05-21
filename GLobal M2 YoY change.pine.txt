@@ -1,0 +1,69 @@
+//@version=5
+// Title and Short Title Configuration
+indicator(title="Global M2 YoY % Change (USD) (From Dylan)", shorttitle="Global M2 YoY %", overlay=false)
+
+// User Input for Label Condition
+labels_condition = input(true, "Display Label")
+
+// EUROZONE Data
+EUM2D = request.security("ECONOMICS:EUM2*FX:EURUSD", "W", close)
+
+// North America Data
+USM2D = request.security("ECONOMICS:USM2", "W", close)
+CAM2D = request.security("ECONOMICS:CAM2*FX_IDC:CADUSD", "W", close)
+
+// Non-EU Europe Data
+CHM2D = request.security("ECONOMICS:CHM2*FX_IDC:CHFUSD", "W", close)
+GBM2D = request.security("ECONOMICS:GBM2*FX:GBPUSD", "W", close)
+FIPOP = request.security("ECONOMICS:FIM2/FX_IDC:USDFIM", "W", close)
+RUM2D = request.security("ECONOMICS:RUM2*FX_IDC:RUBUSD", "W", close)
+
+// Pacific Data
+NZM2D = request.security("ECONOMICS:NZM2*FX_IDC:NZDUSD", "W", close)
+
+// Asia Data
+CNM2D = request.security("ECONOMICS:CNM2*FX_IDC:CNYUSD", "W", close)
+TWM2D = request.security("ECONOMICS:TWM2*FX_IDC:TWDUSD", "W", close)
+HKM2D = request.security("ECONOMICS:HKM2*FX_IDC:HKDUSD", "W", close)
+INM2D = request.security("ECONOMICS:INM2*FX_IDC:INRUSD", "W", close)
+JPM2D = request.security("ECONOMICS:JPM2*FX_IDC:JPYUSD", "W", close)
+PHM2D = request.security("ECONOMICS:PHM2*FX_IDC:PHPUSD", "W", close)
+SGM2D = request.security("ECONOMICS:SGM2*FX_IDC:SGDUSD", "W", close)
+
+// Latin America Data
+BRM2D = request.security("ECONOMICS:BRM2*FX_IDC:BRLUSD", "W", close)
+COM2D = request.security("ECONOMICS:COM2*FX_IDC:COPUSD", "W", close)
+MXM2D = request.security("ECONOMICS:MXM2*FX_IDC:MXNUSD", "W", close)
+
+// Middle East Data
+AEM2D = request.security("ECONOMICS:AEM2*FX_IDC:AEDUSD", "W", close)
+TRM2D = request.security("ECONOMICS:TRM2*FX_IDC:TRYUSD", "W", close)
+
+// Africa Data
+ZAM2D = request.security("ECONOMICS:ZAM2*FX_IDC:ZARUSD", "W", close)
+
+//Jesse Myers data added
+SKM2D = request.security("ECONOMICS:KRM2*FX_IDC:KRWUSD", "W", close)
+AUM2D = request.security("ECONOMICS:AUM3*FX_IDC:AUDUSD", "W", close)
+IDM2D = request.security("ECONOMICS:IDM2*FX_IDC:IDRUSD", "W", close)
+SAM2D = request.security("ECONOMICS:SAM2*FX_IDC:SARUSD", "W", close)
+PLM2D = request.security("ECONOMICS:PLM2*FX_IDC:PLNUSD", "W", close)
+SEM2D = request.security("ECONOMICS:SEM2*FX_IDC:SEKUSD", "W", close)
+
+// Calculate Global Money Supply M2
+GLM2 = EUM2D + USM2D + CAM2D + CHM2D + GBM2D + FIPOP + RUM2D + NZM2D + CNM2D + TWM2D + HKM2D + INM2D + JPM2D + PHM2D + SGM2D + BRM2D + COM2D + MXM2D + AEM2D + TRM2D + ZAM2D + SKM2D + AUM2D + IDM2D + SAM2D + PLM2D + SEM2D
+
+
+// Year-over-Year % Change Section
+// ------------------------
+
+// Calculating 52-week change manually
+previousYearGLM2 = ta.valuewhen(bar_index >= 52, GLM2[52], 0)
+YoYChange = (GLM2 - previousYearGLM2) / previousYearGLM2 * 100
+
+
+// Color condition for YoY Change
+colorCondition = YoYChange > 0 ? color.green : color.red
+
+// Plotting with conditional colors and 75% transparency
+plot(YoYChange, color=colorCondition, title="Global M2 YoY % Change (USD)", style=plot.style_area, linewidth=1)

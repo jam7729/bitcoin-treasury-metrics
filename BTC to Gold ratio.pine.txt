@@ -1,0 +1,22 @@
+// This Pine Script® code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
+// © Croesus_BTC
+
+//@version=6
+indicator("BTC / Gold Ratio", overlay=false)
+
+// Get BTC price in USD
+btc_usd = request.security("BTCUSD", "D", close)
+
+// Get Gold spot price per ounce in USD
+// Common TradingView symbol: "OANDA:XAUUSD"
+gold_usd = request.security("OANDA:XAUUSD", "D", close)
+
+// Compute the ratio
+btc_to_gold = gold_usd > 0 ? btc_usd / gold_usd : na
+
+// Plot the ratio
+plot(btc_to_gold, title="BTC / Gold (oz) Ratio", color=color.yellow, linewidth=2)
+
+// Optional: label or horizontal reference line
+hline(10, "10x", color=color.gray)
+

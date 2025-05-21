@@ -1,0 +1,43 @@
+// This Pine Script® code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
+// © Croesus_BTC
+
+//@version=6
+indicator("mNAV, Shares, BTC, BTC NAV, Market Cap", overlay=false)
+
+// --- State: BTC + Shares ---
+var float btc = 0.0
+var float shares = 400000000.0
+
+if year == 2025 and month == 2 and dayofmonth >= 13
+    btc := 1.0
+if year == 2025 and month == 2 and dayofmonth >= 20
+    btc := 8.88
+if year == 2025 and month == 3 and dayofmonth >= 20
+    btc := 18.88
+if year == 2025 and month == 4 and dayofmonth >= 11
+    btc := 28.88
+
+if year == 2025 and month == 4 and dayofmonth >= 23
+    shares := 403272000.0
+
+// --- Live Data: BTC price + FX ---
+btc_usd = request.security("BTCUSD", "D", close)
+usd_hkd = request.security("FX_IDC:USDHKD", "D", close)
+
+// --- Native Data: 1723.HK close price (must run on this chart) ---
+share_price = close
+
+// --- Calculations ---
+nav_btc_usd = btc * btc_usd
+market_cap = shares * share_price
+mnav = nav_btc_usd > 0 ? market_cap / nav_btc_usd : na
+
+// --- Plotting ---
+plot(nav_btc_usd / 1e6, title="BTC NAV (USD, millions)", color=color.orange, linewidth=2)
+plot(market_cap / 1e6, title="Market Cap (USD, millions)", color=color.blue, linewidth=2)
+plot(mnav, title="mNAV (multiple)", color=color.green, linewidth=2)
+plot(share_price, title="Share price", color=color.yellow, linewidth=2)
+
+// Plot BTC and shares
+plot(btc, title="BTC Holdings", color=color.red, linewidth=2)
+plot(shares / 1000000, title="Shares Outstanding (millions)", color=color.white, linewidth=2)

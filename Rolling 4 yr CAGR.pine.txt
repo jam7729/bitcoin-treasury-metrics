@@ -1,0 +1,31 @@
+// This Pine Script® code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
+// © Croesus_BTC
+
+//@version=6
+indicator("Rolling 4-Year CAGR", overlay=true)
+
+lookback_years = input.int(4, minval=1, title="Lookback Period (Years)")
+show_pct = input.bool(true, title="Display as Percentage")
+
+// Bars per year based on timeframe
+bars_per_year = timeframe.isdaily ? 365 :
+     (timeframe.isweekly ? 52 :
+     (timeframe.ismonthly ? 12 : na))
+
+// Check that timeframe is supported
+valid = not na(bars_per_year)
+lookback_bars = lookback_years * bars_per_year
+
+// CAGR calculation
+float cagr = na
+if valid and bar_index >= lookback_bars
+    price_then = close[lookback_bars]
+    growth = close / price_then
+    cagr := math.pow(growth, 1 / lookback_years) - 1
+
+// Plot the CAGR
+plot(valid ? (show_pct ? cagr * 100 : cagr) : na,
+     title="Rolling 4-Year CAGR",
+     color=color.orange, linewidth=2)
+
+hline(0, color=color.gray, linestyle=hline.style_dotted)

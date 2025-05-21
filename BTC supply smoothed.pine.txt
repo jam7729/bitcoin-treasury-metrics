@@ -1,0 +1,56 @@
+// This Pine Script® code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
+// © Croesus_BTC
+
+//@version=6
+indicator("Smoothed Bitcoin Supply", overlay=false)
+
+// === CONFIG ===
+max_supply = 21000000
+launch_time = timestamp(2009, 1, 3, 0, 0)
+last_halving_date = timestamp(2024, 4, 19, 0, 0)
+next_halving_date = timestamp(2028, 3, 29, 0, 0)
+daily_subsidy_current = 453.7363291  // empirically measured daily issuance rate post-halving
+
+// === HALVING TIMESTAMPS ===
+halving_dates = array.from(timestamp(2009, 1, 3, 0, 0), timestamp(2012, 11, 28, 0, 0), timestamp(2016, 7, 9, 0, 0), timestamp(2020, 5, 11, 0, 0), last_halving_date, next_halving_date)
+
+// === BLOCK SUBSIDIES PER ERA ===
+block_subsidies = array.from(50.0, 25.0, 12.5, 6.25, daily_subsidy_current)
+blocks_per_era = 210000
+
+// === SUPPLY FUNCTION ===
+get_smoothed_supply(ts) =>
+    supply = 0.0
+    for i = 0 to array.size(halving_dates) - 2
+        t1 = array.get(halving_dates, i)
+        t2 = array.get(halving_dates, i + 1)
+        amount = 0.0
+        if i < 4
+            subsidy = array.get(block_subsidies, i)
+            amount := blocks_per_era * subsidy
+        else
+            days = (t2 - t1) / 1000 / 60 / 60 / 24
+            amount := days * daily_subsidy_current
+        if ts >= t2
+            supply += amount
+        else if ts >= t1 and ts < t2
+            fraction = (ts - t1) / (t2 - t1)
+            supply += fraction * amount
+            break
+    math.min(supply, max_supply)
+
+// === VALUES ===
+supply = time >= launch_time ? get_smoothed_supply(time) : na
+percent_remaining = 100 * (max_supply - supply) / max_supply
+label_text = "Only " + str.tostring(math.round(percent_remaining * 10) / 10) + "% left to be mined"
+
+
+// === PLOTS ===
+plot(supply, title="Smoothed Circulating Supply", color=color.white, linewidth=2)
+hline(max_supply, title="Max Supply (21M)", color=color.gray, linestyle=hline.style_dashed)
+
+// === LABEL ===
+var label btcRemainingLabel = na
+if bar_index == ta.highest(bar_index, 1) and not na(supply)
+    label.delete(btcRemainingLabel)
+    btcRemainingLabel := label.new(x=bar_index, y=supply, text=label_text, xloc=xloc.bar_index, yloc=yloc.price, style=label.style_label_up, color=color.orange, textcolor=color.white)
